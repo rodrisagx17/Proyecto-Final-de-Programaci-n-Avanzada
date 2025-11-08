@@ -29,6 +29,7 @@ CREATE TABLE `Persona`(
     Nombre VARCHAR(30) NOT NULL,
     ApellidoPA VARCHAR(30) NOT NULL,
     ApellidoMA VARCHAR(30) NOT NULL,
+    Edad INT(3) NOT NULL,
     Email VARCHAR(45) NOT NULL,
     Telefono VARCHAR(20),
     Activo BOOLEAN DEFAULT TRUE
