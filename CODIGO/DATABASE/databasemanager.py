@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 from typing import List, Dict, Any, Optional
 
 class DatabaseManager:
@@ -9,21 +9,26 @@ class DatabaseManager:
     def connect(self, host: str = "localhost", user: str = "root", 
                 password: str = "", database: str = "", port: int = 3306) -> bool:
         try:
-            self.connection = mysql.connector.connect(
-                host=host, user=user, password=password, 
-                database=database, port=port
+            self.connection = pymysql.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database,
+                port=port,
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor
             )
-            self.cursor = self.connection.cursor(dictionary=True)
+            self.cursor = self.connection.cursor()
             print(f"Conexión exitosa a: {database}")
             return True
-        except mysql.connector.Error as e:
+        except pymysql.Error as e:
             print(f"Error al conectar: {e}")
             return False
 
     def disconnect(self) -> None:
         if self.cursor:
             self.cursor.close()
-        if self.connection and self.connection.is_connected():
+        if self.connection:
             self.connection.close()
             print("Conexión cerrada")
 
@@ -44,7 +49,7 @@ class DatabaseManager:
             self.cursor.execute(query, params or ())
             self.commit()
             return True
-        except mysql.connector.Error as e:
+        except pymysql.Error as e:
             print(f"Error en query: {e}")
             self.rollback()
             return False
@@ -54,7 +59,7 @@ class DatabaseManager:
         try:
             self.cursor.execute(query, params or ())
             return self.cursor.fetchall()
-        except mysql.connector.Error as e:
+        except pymysql.Error as e:
             print(f"Error en fetch: {e}")
             return []
 
@@ -63,7 +68,7 @@ class DatabaseManager:
         try:
             self.cursor.execute(query, params or ())
             return self.cursor.fetchone()
-        except mysql.connector.Error as e:
+        except pymysql.Error as e:
             print(f"Error en fetch: {e}")
             return None
 
