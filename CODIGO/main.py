@@ -1,5 +1,7 @@
 from DATABASE.databasemanager import DatabaseManager
 from CONTROLLERS.gymcontroller import GymController
+from MODELS.direccion import Direccion
+from MODELS.persona import Persona
 from MODELS.sede import Sede
 from MODELS.cliente import Cliente
 from datetime import datetime
@@ -9,7 +11,7 @@ def main():
         'host': 'localhost',
         'user': 'root',
         'password': '',
-        'database': 'gym',
+        'database': 'gyms',
         'port': 3306
     }
     
@@ -19,43 +21,48 @@ def main():
         gym = GymController(db_manager)
         
         try:
-            # Ejemplo para obtener sedes existentes
+            # Obtener sedes existentes
             sedes = gym.obtener_sedes()
             print(f"Sedes disponibles: {len(sedes)}")
             
-            # Ejemplo para obtener clientes
+            # Obtener clientes
             clientes = gym.obtener_clientes()
             print(f"Clientes registrados: {len(clientes)}")
             
-            # Ejemplo para CREAR nueva sede si no hay
+            # Crear nueva sede si no hay
             if not sedes:
-                sede = Sede(
-                    nombre="GYM WARRIOR Z25",
-                    hora_abre="07:00",
-                    hora_cierra="22:00",
-                    direccion="Zaragoza #25",
-                    telefono="8123456789",
+                direccion = Direccion(
+                    calle="Zaragoza #25",
                     ciudad="Monterrey",
                     estado="Nuevo León",
                     cp=64000
                 )
+                sede = Sede(
+                    nombre="GYM WARRIOR Z25",
+                    hora_abre="07:00",
+                    hora_cierra="22:00",
+                    direccion=direccion,
+                    telefono="8123456789"
+                )
                 sede_id = gym.crear_sede(sede)
                 print(f"Sede creada con ID: {sede_id}")
-                sedes = gym.obtener_sedes()  # Recargar sedes
+                sedes = gym.obtener_sedes()
             
-            # Ejemplo para crear nuevo cliente
+            # Crear nuevo cliente
             if sedes:
-                cliente = Cliente(
-                    identificacion="CURP123456",
+                persona = Persona(
                     nombre="María",
-                    apellido_paterno="Gómez",
-                    apellido_materno="López",
-                    telefono="8118765432",
-                    genero="Femenino",
-                    fecha_nacimiento=datetime(1992, 8, 15),
-                    fecha_inscripcion=datetime.now(),
+                    apellido_pa="Gómez",
+                    apellido_ma="López",
+                    email="maria@email.com",
+                    telefono="8118765432"
+                )
+                cliente = Cliente(
+                    persona=persona,
                     sede_inscrito=sedes[0],
-                    activo=True
+                    genero="Femenino",
+                    fecha_nac=datetime(1992, 8, 15),
+                    fecha_inscri=datetime.now()
                 )
                 
                 nuevo_id = gym.crear_cliente(cliente)
