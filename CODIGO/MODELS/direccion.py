@@ -1,8 +1,8 @@
 from typing import Optional
 
 class Direccion:
-    def __init__(self, calle: str = "", ciudad: str = "", estado: str = "", 
-                 cp: int = 0, id: Optional[int] = None):
+    def __init__(self, id: Optional[int] = None, calle: str = "", ciudad: str = "", 
+                 estado: str = "", cp: int = 0):
         self.id = id
         self.calle = calle
         self.ciudad = ciudad
