@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS `GYMs`;
-USE `GYMs`;
+CREATE DATABASE IF NOT EXISTS `gyms`;
+USE `gyms`;
 
 -- ============================================
 -- TABLAS BASE
