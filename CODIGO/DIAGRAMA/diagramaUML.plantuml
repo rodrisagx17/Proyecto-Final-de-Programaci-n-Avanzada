@@ -1,0 +1,131 @@
+@startuml GymManagementSystem
+
+package "Database" {
+  class DatabaseManager {
+    - connection: Connection
+    - cursor: Cursor
+    + connect(host, user, password, database, port): bool
+    + disconnect(): void
+    + execute_query(query, params): bool
+    + fetch_all(query, params): List[Dict]
+    + fetch_one(query, params): Dict
+    + get_last_id(): int
+    + commit(): void
+    + rollback(): void
+  }
+}
+
+package "Models" {
+  class Direccion {
+    - id: Optional[int]
+    - calle: str
+    - ciudad: str
+    - estado: str
+    - cp: int
+    + __str__(): str
+  }
+
+  class Persona {
+    - id: Optional[int]
+    - nombre: str
+    - apellido_pa: str
+    - apellido_ma: str
+    - email: str
+    - telefono: str
+    - activo: bool
+    + nombre_completo: str
+  }
+
+  class Sede {
+    - id: Optional[int]
+    - nombre: str
+    - hora_abre: str
+    - hora_cierra: str
+    - telefono: str
+    + direccion: Direccion
+  }
+
+  class Cliente {
+    - cod_cli: Optional[int]
+    - genero: str
+    - fecha_nac: datetime
+    - fecha_inscri: datetime
+    + persona: Persona
+    + sede_inscrito: Sede
+    + edad: int
+  }
+
+  class Empleado {
+    - cod_emple: Optional[int]
+    - fecha_contrat: datetime
+    - salario: float
+    - rol: str
+    + persona: Persona
+    + sede: Sede
+  }
+
+  class Membresia {
+    - cod_mem: Optional[int]
+    - tipo: str
+    - precio: float
+    - fecha_inicio: datetime
+    - fecha_venc: datetime
+    - estado: str
+    + cliente: Cliente
+    + dias_restantes: int
+  }
+}
+
+package "Controllers" {
+  class GymController {
+    - db: DatabaseManager
+    + crear_direccion(direccion): Optional[int]
+    + crear_persona(persona): Optional[int]
+    + crear_sede(sede): Optional[int]
+    + obtener_sedes(): List[Sede]
+    + crear_cliente(cliente): Optional[int]
+    + obtener_clientes(): List[Cliente]
+    + actualizar_cliente(cliente): bool
+    + eliminar_cliente(cliente_id): bool
+    + registrar_asistencia(cliente_id, sede_id): bool
+    + registrar_salida(cliente_id): bool
+  }
+}
+
+package "Main" {
+  class App {
+    + main(): void
+  }
+}
+
+' Relaciones de Composición/Agregación
+Sede "1" *-- "1" Direccion
+Cliente "1" *-- "1" Persona
+Cliente "1" *-- "1" Sede
+Empleado "1" *-- "1" Persona
+Empleado "1" *-- "1" Sede
+Membresia "1" *-- "1" Cliente
+
+' Relaciones de Dependencia
+GymController --> DatabaseManager
+GymController --> Direccion
+GymController --> Persona
+GymController --> Sede
+GymController --> Cliente
+GymController --> Empleado
+GymController --> Membresia
+
+App --> GymController
+App --> DatabaseManager
+
+' Estilo para mejorar la legibilidad
+skinparam class {
+    BackgroundColor<<Models>> LightBlue
+    BackgroundColor<<Controllers>> LightGreen
+    BackgroundColor<<Database>> LightYellow
+    BackgroundColor<<Main>> LightPink
+    BorderColor Black
+    ArrowColor Black
+}
+
+@enduml
