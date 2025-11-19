@@ -1,0 +1,188 @@
+@startuml GymDatabase
+entity "Direccion" as dir {
+  * ID : INT <<PK>> <<Auto>>
+  --
+  * Calle : VARCHAR(200)
+  * Ciudad : VARCHAR(50)
+  * EstadoP : VARCHAR(50)
+  * CP : INT
+}
+
+entity "Sede" as sed {
+  * ID : INT <<PK>> <<Auto>>
+  --
+  * Nombre : VARCHAR(70) <<Unique>>
+  * HoraAbre : TIME
+  * HoraCierra : TIME
+  * IDDireccion : INT <<FK>>
+  Telefono : VARCHAR(20)
+}
+
+entity "Persona" as per {
+  * ID : INT <<PK>> <<Auto>>
+  --
+  * Nombre : VARCHAR(30)
+  * ApellidoPA : VARCHAR(30)
+  * ApellidoMA : VARCHAR(30)
+  * Edad : INT(3)
+  * Email : VARCHAR(45)
+  Telefono : VARCHAR(20)
+  Activo : BOOLEAN
+}
+
+' ============================================
+' ENTIDADES DE HERENCIA
+' ============================================
+
+entity "Empleado" as emp {
+  * CodEmple : INT <<PK>> <<Auto>>
+  --
+  * IDPersona : INT <<FK>> <<Unique>>
+  IDSede : INT <<FK>>
+  * FechaContrat : DATE
+  * Salario : DECIMAL(10,2)
+  * Rol : VARCHAR(30)
+}
+
+entity "Cliente" as cli {
+  * CodCli : INT <<PK>> <<Auto>>
+  --
+  * IDPersona : INT <<FK>> <<Unique>>
+  IDSedeInscrito : INT <<FK>>
+  * Genero : ENUM
+  * FechaNac : DATE
+  * FechaInscri : DATETIME
+}
+
+entity "Membresia" as mem {
+  * CodMem : INT <<PK>> <<Auto>>
+  --
+  * IDCliente : INT <<FK>>
+  * Tipo : ENUM
+  * Precio : DECIMAL(8,2)
+  * FechaInicio : DATETIME
+  * FechaVenc : DATETIME
+  DiasValidez : INT <<Generated>>
+  * Estado : ENUM
+}
+
+entity "Pago" as pag {
+  * Folio : INT <<PK>> <<Auto>>
+  --
+  * IDCliente : INT <<FK>>
+  IDEmpleado : INT <<FK>>
+  * IDMembresia : INT <<FK>>
+  * Monto : DECIMAL(10,2)
+  * MontoPagado : DECIMAL(10,2)
+  Cambio : DECIMAL(10,2) <<Generated>>
+  * Metodo : ENUM
+  * FechaPago : DATETIME
+  * Concepto : VARCHAR(100)
+  * Estado : ENUM
+  Referencia : VARCHAR(50)
+}
+
+entity "Asistencia" as asi {
+  * ID : INT <<PK>> <<Auto>>
+  --
+  * IDCliente : INT <<FK>>
+  * IDSede : INT <<FK>>
+  * Fecha : DATE
+  * HoraEntrada : TIME
+  HoraSalida : TIME
+}
+
+entity "Inventario" as inv {
+  * CodigoBarras : INT <<PK>> <<Auto>>
+  --
+  IDSede : INT <<FK>>
+  * Nombre : VARCHAR(100)
+  * Categoria : ENUM
+  * Tipo : VARCHAR(50)
+  Descripcion : TEXT
+  * PrecioVenta : DECIMAL(8,2)
+  PrecioCompra : DECIMAL(8,2)
+  * Cantidad : INT
+  StockMinimo : INT
+  FechaCaducidad : DATE
+  Activo : BOOLEAN
+}
+
+entity "Prestamo_Equipo" as pre {
+  * ID : INT <<PK>> <<Auto>>
+  --
+  * IDCliente : INT <<FK>>
+  * IDEquipo : INT <<FK>>
+  * IDEmpleado : INT <<FK>>
+  * FechaPrestamo : DATETIME
+  FechaDevolucion : DATETIME
+  Estado : ENUM
+  Observaciones : TEXT
+}
+
+' Relaciones Sede
+sed }|--|| dir : "tiene\n(1:1)"
+sed ||--o{ emp : "emplea\n(1:N)"
+sed ||--o{ cli : "inscribe\n(1:N)"
+sed ||--o{ asi : "registra_asistencia\n(1:N)"
+sed ||--o{ inv : "almacena\n(1:N)"
+
+' Relaciones Persona (Herencia)
+per ||--|| emp : "es_empleado\n(1:1)"
+per ||--|| cli : "es_cliente\n(1:1)"
+
+' Relaciones Cliente
+cli ||--o{ mem : "tiene_membresia\n(1:N)"
+cli ||--o{ asi : "registra_asistencia\n(1:N)"
+cli ||--o{ pag : "realiza_pago\n(1:N)"
+cli ||--o{ pre : "solicita_préstamo\n(1:N)"
+
+' Relaciones Empleado
+emp ||--o{ pag : "procesa_pago\n(1:N)"
+emp ||--o{ pre : "registra_préstamo\n(1:N)"
+
+' Relaciones Membresia
+mem ||--o{ pag : "se_paga_con\n(1:N)"
+
+' Relaciones Inventario
+inv ||--o{ pre : "se_presta\n(1:N)"
+
+' ============================================
+' NOTAS Y ESTEREOTIPOS
+' ============================================
+
+note top of per
+  **Tabla base para herencia**
+  Activo = TRUE por defecto
+  Índices en:
+  - Activo
+  - Email
+end note
+
+note top of mem
+  **Membresía generada**
+  DiasValidez = DATEDIFF(FechaVenc, FechaInicio)
+  Tipos: Visitante, Semanal, Mensual, Anual
+  Estados: Activa, Inactiva, Expirada, Pausada
+end note
+
+note top of pag
+  **Pago con cambio calculado**
+  Cambio = MontoPagado - Monto
+  Métodos: Efectivo, Tarjeta, Transferencia
+  Estados: Completado, Pendiente, Cancelado
+end note
+
+note top of inv
+  **Inventario con control de stock**
+  Categorías: Bebida, Suplemento, Accesorio, Ropa, Equipo
+  StockMinimo = 5 por defecto
+  Activo = TRUE por defecto
+end note
+
+note top of pre
+  **Sistema de préstamos**
+  Estados: Prestado, Devuelto, Atrasado
+  Relación con Inventario para equipos
+end note
+@enduml
